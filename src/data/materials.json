@@ -1,0 +1,26 @@
+[
+    {
+        "truflexType": "B1",
+        "astmType": "TM1",
+        "maxRecommendedTempF": 1000,
+        "flexivity": 0.0000150,
+        "elasticModulusPsi": 25000000,
+        "description": "Good all-purpose material."
+    },
+    {
+        "truflexType": "E4",
+        "astmType": "TM4",
+        "maxRecommendedTempF": 1000,
+        "flexivity": 0.0000086,
+        "elasticModulusPsi": 25000000,
+        "description": "Best all purpose 250 to 700°F."
+    },
+    {
+        "truflexType": "P675R",
+        "astmType": "TM2",
+        "maxRecommendedTempF": 800,
+        "flexivity": 0.0000217,
+        "elasticModulusPsi": 19000000,
+        "description": "Most active material available."
+    }
+]

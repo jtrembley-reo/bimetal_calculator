@@ -10,34 +10,43 @@ const PORT = 3000;
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.json());
 
-// API Endpoint to process the calculation
-app.post('/api/calculate', (req, res) => {
-    // Extract inputs sent from the browser
-    const { minTemp, maxTemp, dialSweep, thickness } = req.body;
-    const deltaT = maxTemp - minTemp;
+const { calculateCoil } = require('./math/calculator');
 
-    // Load materials database
-    const materialsPath = path.join(__dirname, 'data', 'materials.json');
-    const materialsData = JSON.parse(fs.readFileSync(materialsPath, 'utf8'));
+app.post('/api/calculate', express.json(), (req, res) => {
+    // ADDED: 'gap' destructured from the request body
+    const { t1, t2, sweep, thickness, thickTol, maxOD, width, gap } = req.body;
+    const dbPath = path.join(__dirname, 'data', 'materials.json');
 
-    // Filter by max temperature and sort by highest flexivity
-    const viableMaterials = materialsData
-        .filter(mat => mat.maxRecommendedTempF >= maxTemp)
-        .sort((a, b) => b.flexivity - a.flexivity);
+    fs.readFile(dbPath, 'utf8', (err, data) => {
+        if (err) return res.status(500).json({ error: 'Database read error' });
+        
+        let materials = [];
+        try { materials = JSON.parse(data); } 
+        catch (e) { return res.status(500).json({ error: 'Database format error' }); }
 
-    // Calculate required lengths
-    const results = viableMaterials.map(mat => {
-        const requiredLength = calculateLength(dialSweep, mat.flexivity, deltaT, thickness);
-        return {
-            alloy: mat.truflexType,
-            astm: mat.astmType,
-            flexivity: mat.flexivity,
-            requiredLength: requiredLength.toFixed(3)
-        };
+        const results = [];
+
+        materials.forEach(material => {
+            const result = calculateCoil(
+                material, 
+                Number(t1), 
+                Number(t2), 
+                Number(sweep), 
+                Number(thickness), 
+                Number(thickTol), 
+                Number(maxOD),
+                Number(width),
+                Number(gap) // ADDED: Passing gap to the math engine
+            );
+            
+            if (result && !result.error) {
+                results.push(result);
+            }
+        });
+
+        results.sort((a, b) => a.targetLength - b.targetLength);
+        res.json(results);
     });
-
-    // Send the results back to the browser
-    res.json({ span: deltaT, results });
 });
 
 // NEW: Endpoint to get all materials so the frontend dropdown can load them

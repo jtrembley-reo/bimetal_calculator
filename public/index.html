@@ -1,63 +1,165 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Bimetal Coil Calculator</title>
+    <meta charset="UTF-8">
+    <title>Bimetal Coil Calculator Pro</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; }
-        .form-group { margin-bottom: 10px; }
-        label { display: inline-block; width: 150px; }
-        input { padding: 5px; width: 100px; }
-        button { padding: 10px 15px; margin-top: 10px; cursor: pointer; }
-        pre { background: #f4f4f4; padding: 15px; border-radius: 5px; }
+        :root {
+            --primary: #0056b3; --primary-hover: #004494;
+            --success: #28a745; --danger: #dc3545; --warning: #ffc107;
+            --border: #ced4da; --bg-light: #f8f9fa;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background-color: #eef2f5; color: #333; padding: 20px; max-width: 1000px; margin: auto; }
+        nav { margin-bottom: 25px; padding: 12px 20px; background-color: white; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; }
+        nav a { text-decoration: none; color: var(--primary); font-weight: 600; }
+        nav a:hover { text-decoration: underline; }
+        h2 { color: #2c3e50; margin-bottom: 20px; }
+        
+        .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-section { margin-bottom: 20px; }
+        h3 { margin-top: 0; margin-bottom: 15px; color: #495057; font-size: 1.1em; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
+        label { font-weight: 600; margin-bottom: 6px; font-size: 0.85em; color: #555; }
+        input { padding: 10px 12px; border: 1px solid var(--border); border-radius: 5px; font-size: 14px; transition: all 0.2s; }
+        input:focus { border-color: #80bdff; outline: none; box-shadow: 0 0 0 3px rgba(0,123,255,.15); }
+        
+        button { background-color: var(--primary); color: white; border: none; padding: 14px; font-size: 1.1em; font-weight: 600; border-radius: 5px; cursor: pointer; width: 100%; transition: background 0.2s; }
+        button:hover { background-color: var(--primary-hover); }
+
+        /* Table Styles */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9em; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: var(--bg-light); color: #495057; font-weight: 600; }
+        tr:hover { background-color: #f1f7fd; }
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; }
+        .badge-warn { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
     </style>
 </head>
 <body>
 
-    <h2>Thermostat Bimetal Calculator</h2>
-    <nav style="margin-bottom: 20px; padding: 10px; background-color: #f0f0f0; border-radius: 5px;">
-        <strong>Bimetal Calculator</strong> | 
-        <a href="/add-material.html" style="text-decoration: none; color: #0056b3;">+ Add New ASTM Material</a>
+    <nav>
+        <strong style="font-size: 1.2em; color: #2c3e50;">Bimetal Coil Engineering</strong>
+        <a href="/add-material.html">Material Library Manager &rarr;</a>
     </nav>
-    
-    <div class="form-group">
-        <label>Min Temp (°F):</label>
-        <input type="number" id="minTemp" value="-20">
-    </div>
-    <div class="form-group">
-        <label>Max Temp (°F):</label>
-        <input type="number" id="maxTemp" value="150">
-    </div>
-    <div class="form-group">
-        <label>Dial Sweep (°):</label>
-        <input type="number" id="dialSweep" value="270">
-    </div>
-    <div class="form-group">
-        <label>Thickness (in):</label>
-        <input type="number" step="0.001" id="thickness" value="0.010">
-    </div>
-    
-    <button onclick="calculate()">Calculate Coils</button>
 
-    <h3>Results:</h3>
-    <pre id="output">Awaiting input...</pre>
+    <<div class="card">
+        <form id="calcForm">
+            <div class="grid-2">
+                <div class="form-section">
+                    <h3>1. Application Requirements</h3>
+                    <div class="grid-2">
+                        <div class="form-group"><label>Min Temp (T₁, °F)</label><input type="number" step="any" id="t1" value="50" required></div>
+                        <div class="form-group"><label>Max Temp (T₂, °F)</label><input type="number" step="any" id="t2" value="200" required></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Required Dial Sweep (Degrees)</label>
+                        <input type="number" step="any" id="sweep" value="300" required>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>2. Physical Manufacturing Constraints</h3>
+                    <div class="grid-2">
+                        <div class="form-group"><label>Strip Thickness (in)</label><input type="number" step="any" id="thickness" value="0.007" required></div>
+                        <div class="form-group"><label>Thickness Tol. (± in)</label><input type="number" step="any" id="thickTol" value="0.0004" required></div>
+                        <div class="form-group"><label>Strip Width (in)</label><input type="number" step="any" id="width" value="0.062" required></div>
+                        <div class="form-group"><label>Turn Gap (in)</label><input type="number" step="any" id="gap" value="0.020" required></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Max Coil Outer Diameter (Housing ID, in)</label>
+                        <input type="number" step="any" id="maxOD" value="0.156" required>
+                    </div>
+                </div>
+            </div>
+            <button type="submit">Calculate Coil Specifications</button>
+        </form>
+    </div>
+
+    <div class="card" id="resultsCard" style="display: none; overflow-x: auto;">
+        <h3>Viable Material Specifications</h3>
+        <p style="font-size: 0.85em; color: #666; margin-top: -10px; margin-bottom: 15px;">Sorted by most efficient material usage (shortest active length).</p>
+        <div id="tableContainer"></div>
+    </div>
 
     <script>
-        async function calculate() {
+        document.getElementById('calcForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
             const payload = {
-                minTemp: parseFloat(document.getElementById('minTemp').value),
-                maxTemp: parseFloat(document.getElementById('maxTemp').value),
-                dialSweep: parseFloat(document.getElementById('dialSweep').value),
-                thickness: parseFloat(document.getElementById('thickness').value)
+                t1: document.getElementById('t1').value,
+                t2: document.getElementById('t2').value,
+                sweep: document.getElementById('sweep').value,
+                thickness: document.getElementById('thickness').value,
+                thickTol: document.getElementById('thickTol').value,
+                maxOD: document.getElementById('maxOD').value,
+                width: document.getElementById('width').value,
+                gap: document.getElementById('gap').value // ADDED
             };
 
-            const response = await fetch('/api/calculate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+            try {
+                const res = await fetch('/api/calculate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await res.json();
+                renderTable(data);
+            } catch (err) {
+                console.error(err);
+                alert("Error connecting to calculation server.");
+            }
+        });
+
+        function renderTable(data) {
+            document.getElementById('resultsCard').style.display = 'block';
+            const container = document.getElementById('tableContainer');
+
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p style="color: var(--danger); font-weight: bold;">No materials found in the database that can survive these temperatures.</p>';
+                return;
+            }
+
+            let html = `
+                <table style="min-width: 800px;">
+                    <thead>
+                        <tr>
+                            <th>Alloy</th>
+                            <th>Active Length (L)</th>
+                            <th>Mfg Tolerance Range</th>
+                            <th>Turns (N)</th>
+                            <th>Coil Height</th>
+                            <th>Thermal Torque</th>
+                            <th>Mech. Rate</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            data.forEach(item => {
+                const warningHTML = item.sensitivityWarning 
+                    ? `<span class="badge badge-warn" title="Temperatures exceed optimal linear sensitivity range.">Out of Opt. Range</span>` 
+                    : '';
+
+                html += `
+                    <tr>
+                        <td style="font-weight: bold; color: var(--primary);">${item.astmType}</td>
+                        <td style="font-size: 1.1em; font-weight: 600;">${item.targetLength.toFixed(3)}"</td>
+                        <td style="color: #555; font-size: 0.9em;">${item.minLength.toFixed(3)}" to ${item.maxLength.toFixed(3)}"</td>
+                        <td>${item.targetTurns.toFixed(2)}</td>
+                        <td style="font-weight: bold;">${item.coilHeight.toFixed(3)}"</td>
+                        <td style="color: #555; font-size: 0.9em;">${item.thermalTorque > 0 ? item.thermalTorque.toFixed(3) + ' oz-in' : 'N/A'}</td>
+                        <td style="color: #555; font-size: 0.9em;">${item.mechTorqueRate > 0 ? item.mechTorqueRate.toFixed(4) + ' oz-in/°' : 'N/A'}</td>
+                        <td>${warningHTML}</td>
+                    </tr>
+                `;
             });
 
-            const data = await response.json();
-            document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+            html += `</tbody></table>`;
+            container.innerHTML = html;
         }
     </script>
 </body>

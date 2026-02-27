@@ -97,11 +97,11 @@
                 </div>
                 <div class="form-group">
                     <label>Modulus of Elasticity (x 10⁶ psi)</label>
-                    <input type="number" step="0.1" id="modulus" placeholder="25.0" required>
+                    <input type="number" step="any" id="modulus" placeholder="25.0" required>
                 </div>
                 <div class="form-group">
                     <label>Density (lb/in³)</label>
-                    <input type="number" step="0.001" id="density" placeholder="0.29" required>
+                    <input type="number" step="any" id="density" placeholder="0.29" required>
                 </div>
             </div>
         </div>
@@ -192,7 +192,7 @@
             row.innerHTML = `
                 <div class="form-group"><label>Min Temp (°F)</label><input type="number" class="f-min" value="${data ? data.minTempF : ''}" required></div>
                 <div class="form-group"><label>Max Temp (°F)</label><input type="number" class="f-max" value="${data ? data.maxTempF : ''}" required></div>
-                <div class="form-group"><label>Flexivity Value</label><input type="number" step="0.1" class="f-val" value="${data ? data.baseValue : ''}" required></div>
+                <div class="form-group"><label>Flexivity Value</label><input type="number" step="any" class="f-val" value="${data ? data.baseValue : ''}" required></div>
                 <div class="form-group"><label>Tolerance (±%)</label><input type="number" class="f-tol" value="${data ? data.tolerancePercent : ''}" required></div>
                 <button type="button" class="btn-remove" title="Remove Range" onclick="this.parentElement.remove()">&times;</button>
             `;

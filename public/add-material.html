@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Material Library Manager</title>
+    <style>
+        :root {
+            --primary: #0056b3; --primary-hover: #004494;
+            --success: #28a745; --success-hover: #218838;
+            --danger: #dc3545; --danger-hover: #c82333;
+            --border: #ced4da; --bg-light: #f8f9fa;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background-color: #eef2f5; color: #333; padding: 20px; max-width: 800px; margin: auto; }
+        nav { margin-bottom: 25px; padding: 12px 20px; background-color: white; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
+        nav a { text-decoration: none; color: var(--primary); font-weight: 600; }
+        nav a:hover { text-decoration: underline; }
+        h2 { color: #2c3e50; margin-bottom: 20px; }
+        #materialForm { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        
+        .manager-header { background-color: #e9ecef; padding: 20px; border-radius: 6px; margin-bottom: 25px; border: 1px solid #d1d7dc; }
+        .form-section { margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
+        .form-section:last-of-type { border-bottom: none; margin-bottom: 20px; }
+        h3 { margin-top: 0; margin-bottom: 15px; color: #495057; font-size: 1.1em; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
+        label { font-weight: 600; margin-bottom: 6px; font-size: 0.85em; color: #555; }
+        
+        input, select { padding: 10px 12px; border: 1px solid var(--border); border-radius: 5px; width: 100%; box-sizing: border-box; font-size: 14px; transition: all 0.2s; }
+        input:focus, select:focus { border-color: #80bdff; outline: none; box-shadow: 0 0 0 3px rgba(0,123,255,.15); }
+        
+        .flex-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 15px; align-items: end; background: var(--bg-light); padding: 15px; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 15px; }
+        .flex-row .form-group { margin-bottom: 0; }
+        
+        button { padding: 10px 16px; font-weight: 600; cursor: pointer; border-radius: 5px; border: none; transition: background-color 0.2s; }
+        .btn-add { background-color: var(--primary); color: white; margin-bottom: 10px; font-size: 0.9em; }
+        .btn-add:hover { background-color: var(--primary-hover); }
+        .btn-remove { background-color: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 0 15px; height: 38px; font-size: 1.2em; display: flex; align-items: center; justify-content: center; }
+        .btn-remove:hover { background-color: var(--danger); color: white; }
+        .btn-submit { background-color: var(--success); color: white; width: 100%; font-size: 1.1em; padding: 14px; margin-top: 10px; }
+        .btn-submit:hover { background-color: var(--success-hover); }
+        #status { margin-top: 20px; font-weight: 600; text-align: center; padding: 10px; border-radius: 5px;}
+    </style>
+</head>
+<body>
+
+    <nav><a href="/">&larr; Back to Calculator</a></nav>
+
+    <h2>Material Library Manager</h2>
+    
+    <form id="materialForm">
+        <div class="manager-header">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label style="color: #2c3e50; font-size: 1em;">Select Material to Edit</label>
+                <select id="materialSelect" onchange="loadMaterialIntoForm()">
+                    <option value="">-- Create New Material --</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>General Specifications</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>ASTM Type / Alloy Name</label>
+                    <input type="text" id="astmType" placeholder="e.g., TM1" required>
+                </div>
+                <div class="form-group">
+                    <label>Max Recommended Temp (°F)</label>
+                    <input type="number" id="maxTemp" placeholder="e.g., 1000" required>
+                </div>
+                <div class="form-group">
+                    <label>Max Sensitivity Min Temp (°F)</label>
+                    <input type="number" id="sensMin" placeholder="e.g., 0" required>
+                </div>
+                <div class="form-group">
+                    <label>Max Sensitivity Max Temp (°F)</label>
+                    <input type="number" id="sensMax" placeholder="e.g., 300" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Flexivity Ranges (x 10⁻⁶)</h3>
+            <div id="flexivities-container"></div>
+            <button type="button" class="btn-add" onclick="addFlexivityRow()">+ Add Temperature Range</button>
+        </div>
+
+        <div class="form-section">
+            <h3>Physical & Electrical Properties</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>Resistivity (Ω·cmil/ft)</label>
+                    <input type="number" id="resistivityVal" placeholder="475" required>
+                </div>
+                <div class="form-group">
+                    <label>Resistivity Tolerance (±%)</label>
+                    <input type="number" id="resistivityTol" placeholder="4" required>
+                </div>
+                <div class="form-group">
+                    <label>Modulus of Elasticity (x 10⁶ psi)</label>
+                    <input type="number" step="0.1" id="modulus" placeholder="25.0" required>
+                </div>
+                <div class="form-group">
+                    <label>Density (lb/in³)</label>
+                    <input type="number" step="0.001" id="density" placeholder="0.29" required>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-submit">Save Material to Database</button>
+        <div id="status"></div>
+    </form>
+
+    <script>
+        let materialsDatabase = [];
+
+        // 1. Load materials from server on page start
+        document.addEventListener("DOMContentLoaded", async () => {
+            await fetchMaterials();
+            addFlexivityRow(); // Add one blank row to start
+        });
+
+        async function fetchMaterials() {
+            try {
+                const res = await fetch('/api/materials');
+                if (res.ok) {
+                    materialsDatabase = await res.json();
+                    populateDropdown();
+                }
+            } catch (e) { console.error("Could not fetch database", e); }
+        }
+
+        function populateDropdown() {
+            const select = document.getElementById('materialSelect');
+            select.innerHTML = '<option value="">-- Create New Material --</option>';
+            materialsDatabase.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.astmType;
+                opt.textContent = m.astmType;
+                select.appendChild(opt);
+            });
+        }
+
+        // 2. Load selected material data into the form
+        function loadMaterialIntoForm() {
+            const selectedType = document.getElementById('materialSelect').value;
+            const container = document.getElementById('flexivities-container');
+            
+            if (!selectedType) {
+                document.getElementById('materialForm').reset();
+                container.innerHTML = '';
+                addFlexivityRow();
+                return;
+            }
+
+            const mat = materialsDatabase.find(m => m.astmType === selectedType);
+            if (!mat) return;
+
+            // Fill General & Physical Inputs
+            document.getElementById('astmType').value = mat.astmType || '';
+            document.getElementById('maxTemp').value = mat.maxRecommendedTempF || '';
+            
+            if (mat.maxSensitivityRangeF && mat.maxSensitivityRangeF.length === 2) {
+                document.getElementById('sensMin').value = mat.maxSensitivityRangeF[0];
+                document.getElementById('sensMax').value = mat.maxSensitivityRangeF[1];
+            }
+
+            if (mat.electricalResistivityOhmsCmilFt) {
+                document.getElementById('resistivityVal').value = mat.electricalResistivityOhmsCmilFt.value || '';
+                document.getElementById('resistivityTol').value = mat.electricalResistivityOhmsCmilFt.tolerancePercent || '';
+            }
+
+            if (mat.modulusOfElasticityPsi) {
+                document.getElementById('modulus').value = mat.modulusOfElasticityPsi.baseValue || '';
+            }
+
+            document.getElementById('density').value = mat.densityLbIn3 || '';
+
+            // Fill Flexivity Rows
+            container.innerHTML = ''; // Clear current rows
+            if (mat.flexivities && mat.flexivities.length > 0) {
+                mat.flexivities.forEach(flex => addFlexivityRow(flex));
+            } else {
+                addFlexivityRow();
+            }
+        }
+
+        // Modified to optionally accept data to pre-fill the row
+        function addFlexivityRow(data = null) {
+            const container = document.getElementById('flexivities-container');
+            const row = document.createElement('div');
+            row.className = 'flex-row';
+            row.innerHTML = `
+                <div class="form-group"><label>Min Temp (°F)</label><input type="number" class="f-min" value="${data ? data.minTempF : ''}" required></div>
+                <div class="form-group"><label>Max Temp (°F)</label><input type="number" class="f-max" value="${data ? data.maxTempF : ''}" required></div>
+                <div class="form-group"><label>Flexivity Value</label><input type="number" step="0.1" class="f-val" value="${data ? data.baseValue : ''}" required></div>
+                <div class="form-group"><label>Tolerance (±%)</label><input type="number" class="f-tol" value="${data ? data.tolerancePercent : ''}" required></div>
+                <button type="button" class="btn-remove" title="Remove Range" onclick="this.parentElement.remove()">&times;</button>
+            `;
+            container.appendChild(row);
+        }
+
+        // 3. Save Form Logic
+        document.getElementById('materialForm').addEventListener('submit', async function(e) {
+            e.preventDefault(); 
+            const statusDiv = document.getElementById('status');
+            
+            const flexRows = document.querySelectorAll('.flex-row');
+            const flexivities = Array.from(flexRows).map(row => ({
+                minTempF: Number(row.querySelector('.f-min').value),
+                maxTempF: Number(row.querySelector('.f-max').value),
+                baseValue: Number(row.querySelector('.f-val').value),
+                multiplier: 1e-6, 
+                tolerancePercent: Number(row.querySelector('.f-tol').value)
+            }));
+
+            const payload = {
+                astmType: document.getElementById('astmType').value,
+                maxRecommendedTempF: Number(document.getElementById('maxTemp').value),
+                maxSensitivityRangeF: [
+                    Number(document.getElementById('sensMin').value),
+                    Number(document.getElementById('sensMax').value)
+                ],
+                flexivities: flexivities,
+                electricalResistivityOhmsCmilFt: { value: Number(document.getElementById('resistivityVal').value), tolerancePercent: Number(document.getElementById('resistivityTol').value) },
+                modulusOfElasticityPsi: { baseValue: Number(document.getElementById('modulus').value), multiplier: 1e6 },
+                densityLbIn3: Number(document.getElementById('density').value)
+            };
+
+            try {
+                const response = await fetch('/api/materials', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    statusDiv.style.backgroundColor = '#d4edda'; statusDiv.style.color = '#155724';
+                    statusDiv.innerText = 'Success! Material saved.';
+                    
+                    // Refresh the database and dropdown behind the scenes
+                    await fetchMaterials();
+                    
+                    setTimeout(() => { statusDiv.innerText = ''; statusDiv.style.backgroundColor = 'transparent'; }, 3000);
+                } else {
+                    statusDiv.style.backgroundColor = '#f8d7da'; statusDiv.style.color = '#721c24'; statusDiv.innerText = 'Error saving to the server.';
+                }
+            } catch (error) {
+                console.error(error);
+                statusDiv.style.backgroundColor = '#f8d7da'; statusDiv.style.color = '#721c24'; statusDiv.innerText = 'Network error occurred.';
+            }
+        });
+    </script>
+</body>
+</html>

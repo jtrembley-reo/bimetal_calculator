@@ -40,6 +40,57 @@ app.post('/api/calculate', (req, res) => {
     res.json({ span: deltaT, results });
 });
 
+// NEW: Endpoint to get all materials so the frontend dropdown can load them
+app.get('/api/materials', (req, res) => {
+    const dbPath = path.join(__dirname, 'data', 'materials.json');
+    fs.readFile(dbPath, 'utf8', (err, data) => {
+        if (err) return res.status(500).json({ error: 'Failed to read database' });
+        try {
+            res.json(JSON.parse(data));
+        } catch (e) {
+            res.json([]); // Return empty array if file is empty or corrupted
+        }
+    });
+});
+
+// UPDATED: Endpoint to Add or Update a material (Upsert)
+app.post('/api/materials', express.json(), (req, res) => {
+    const newMaterial = req.body;
+    const dbPath = path.join(__dirname, 'data', 'materials.json');
+
+    fs.readFile(dbPath, 'utf8', (err, data) => {
+        if (err) return res.status(500).json({ error: 'Failed to read database' });
+        
+        let materials = [];
+        try {
+            if (data.trim() !== '') {
+                const parsed = JSON.parse(data);
+                if (Array.isArray(parsed)) materials = parsed;
+            }
+        } catch (parseError) {
+            return res.status(500).json({ error: 'Database file is corrupted' });
+        }
+
+        // UPSERT LOGIC: Does this ASTM type already exist?
+        const existingIndex = materials.findIndex(m => m.astmType.toLowerCase() === newMaterial.astmType.toLowerCase());
+
+        if (existingIndex >= 0) {
+            // Replace existing material
+            materials[existingIndex] = newMaterial;
+        } else {
+            // Add new material
+            materials.push(newMaterial);
+        }
+
+        fs.writeFile(dbPath, JSON.stringify(materials, null, 2), (writeErr) => {
+            if (writeErr) return res.status(500).json({ error: 'Failed to save material' });
+            res.status(201).json({ message: 'Material saved successfully', material: newMaterial });
+        });
+    });
+});
+
+
+
 // Start the server
 app.listen(PORT, () => {
     console.log(`\n--- Bimetal Calculator Server ---`);
